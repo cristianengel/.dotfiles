@@ -49,44 +49,34 @@ local lspconfig = require("lspconfig")
 -- Capabilities extendidos para autocompletado
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
--- Lua LSP
-lspconfig.lua_ls.setup({
-	capabilities = capabilities,
-	settings = {
-		Lua = {
-			diagnostics = {
-				globals = { "vim" },
-			},
-		},
-	},
-})
-
 -- Java LSP (JDTLS) con soporte para Lombok
 local launcher_path = vim.fn.expand(
 	"/home/cristianengel/.local/share/jdtls/plugins/org.eclipse.equinox.launcher_1.7.100.v20251014-1222.jar")
 local lombok_path = vim.fn.expand("~/.local/share/lombok/lombok.jar")
 
-lspconfig.jdtls.setup({
-	capabilities = capabilities,
-	cmd = {
-		"java",
-		"-Declipse.application=org.eclipse.jdt.ls.core.id1",
-		"-Dosgi.bundles.defaultStartLevel=4",
-		"-Declipse.product=org.eclipse.jdt.ls.core.product",
-		"-Dlog.protocol=true",
-		"-Dlog.level=ALL",
-		"-Xms1g",
-		"--add-modules=ALL-SYSTEM",
-		"--add-opens", "java.base/java.util=ALL-UNNAMED",
-		"--add-opens", "java.base/java.lang=ALL-UNNAMED",
-		"-javaagent:" .. lombok_path,
-		"-jar", launcher_path,
-		"-configuration", vim.fn.expand("~/.local/share/jdtls/config_linux"),
-		"-data", vim.fn.expand("~/.local/share/eclipse/") ..
-	vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t"),
-	},
-	filetypes = { "java" },
-	root_dir = require("lspconfig.util").root_pattern(".git", "mvnw", "gradlew", "pom.xml", "build.gradle"),
+local jdtls = require("jdtls")
+
+jdtls.start_or_attach({
+    capabilities = capabilities,
+    cmd = {
+        "java",
+        "-Declipse.application=org.eclipse.jdt.ls.core.id1",
+        "-Dosgi.bundles.defaultStartLevel=4",
+        "-Declipse.product=org.eclipse.jdt.ls.core.product",
+        "-Dlog.protocol=true",
+        "-Dlog.level=ALL",
+        "-Xms1g",
+        "--add-modules=ALL-SYSTEM",
+        "--add-opens", "java.base/java.util=ALL-UNNAMED",
+        "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+        "-javaagent:" .. lombok_path,
+        "-jar", launcher_path,
+        "-configuration", vim.fn.expand("~/.local/share/jdtls/config_linux"),
+        "-data", vim.fn.expand("~/.local/share/eclipse/")
+            .. vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t"),
+    },
+    root_dir = require("jdtls.setup").find_root({".git", "mvnw", "gradlew", "pom.xml", "build.gradle"}),
+    filetypes = { "java" },
 })
 
 
